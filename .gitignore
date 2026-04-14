@@ -1,0 +1,20 @@
+# Xcode user data
+xcuserdata/
+*.xcuserstate
+*.xcworkspace/xcuserdata/
+
+# IDEs
+.claude/
+.vscode/
+.idea/
+
+# Build artifacts
+build/
+DerivedData/
+
+# CocoaPods
+Pods/
+Podfile.lock
+
+# OS
+.DS_Store
