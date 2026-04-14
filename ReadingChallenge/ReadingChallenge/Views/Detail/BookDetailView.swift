@@ -224,10 +224,7 @@ struct BookDetailView: View {
             }
 
             if book.status == .reading || book.status == .paused || book.status == .finished {
-                labeledDate("Started", date: book.dateStarted ?? Date(), isEditable: true) { newDate in
-                    book.dateStarted = newDate
-                    PersistenceController.shared.save()
-                }
+                labeledDate("Started", date: book.dateStarted ?? Date(), isEditable: false) { _ in }
             }
 
             if book.status == .finished {

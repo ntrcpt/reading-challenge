@@ -55,6 +55,19 @@ struct EditBookView: View {
                     }
                 }
 
+                if viewModel.dateStarted != nil {
+                    Section("Dates") {
+                        DatePicker(
+                            "Started",
+                            selection: Binding(
+                                get: { viewModel.dateStarted ?? Date() },
+                                set: { viewModel.dateStarted = $0 }
+                            ),
+                            displayedComponents: .date
+                        )
+                    }
+                }
+
                 if onDelete != nil {
                     Section {
                         Button(role: .destructive) {

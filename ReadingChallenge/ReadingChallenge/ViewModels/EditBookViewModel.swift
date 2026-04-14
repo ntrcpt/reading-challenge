@@ -6,6 +6,7 @@ final class EditBookViewModel: ObservableObject {
     @Published var author: String
     @Published var isbn: String
     @Published var pageCount: String
+    @Published var dateStarted: Date?
     @Published var isLoadingAPI = false
     @Published var errorMessage: String?
     @Published var showAPIUpdateConfirm = false
@@ -23,6 +24,7 @@ final class EditBookViewModel: ObservableObject {
         author = book.author
         isbn = book.isbn
         pageCount = book.pageCount > 0 ? "\(book.pageCount)" : ""
+        dateStarted = book.dateStarted
     }
 
     func lookupISBN() async {
@@ -65,6 +67,7 @@ final class EditBookViewModel: ObservableObject {
         book.author = newAuthor
         book.isbn = newISBN
         book.pageCount = newPageCount
+        book.dateStarted = dateStarted
 
         // Clamp currentPage if the new page count is less than the current position
         if book.currentPage > newPageCount {
