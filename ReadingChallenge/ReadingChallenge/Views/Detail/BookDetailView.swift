@@ -7,6 +7,11 @@ struct BookDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showDeleteConfirm = false
     @State private var currentPage: Double
+    @State private var showEditSheet = false
+    @State private var showCoverOptions = false
+    @State private var showImagePicker = false
+    @State private var showCameraPicker = false
+    @State private var selectedCoverImage: UIImage?
 
     init(book: Book, viewModel: BookListViewModel) {
         self.book = book
@@ -64,34 +69,88 @@ struct BookDetailView: View {
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Edit") { showEditSheet = true }
+            }
+        }
+        .sheet(isPresented: $showEditSheet) {
+            EditBookView(book: book)
+        }
         .confirmationDialog("Delete this book?", isPresented: $showDeleteConfirm, titleVisibility: .visible) {
             Button("Delete", role: .destructive) {
                 viewModel.deleteBook(book)
                 dismiss()
             }
         }
+        .confirmationDialog("Change Cover Photo", isPresented: $showCoverOptions, titleVisibility: .visible) {
+            if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                Button("Take Photo") { showCameraPicker = true }
+            }
+            Button("Choose from Library") { showImagePicker = true }
+            if book.coverData != nil {
+                Button("Remove Cover", role: .destructive) {
+                    book.coverData = nil
+                    PersistenceController.shared.save()
+                }
+            }
+            Button("Cancel", role: .cancel) { }
+        }
+        .sheet(isPresented: $showImagePicker) {
+            ImagePickerView(selectedImage: $selectedCoverImage)
+        }
+        .sheet(isPresented: $showCameraPicker) {
+            CameraPickerView(selectedImage: $selectedCoverImage)
+        }
+        .onChange(of: selectedCoverImage) { _, newImage in
+            guard let image = newImage,
+                  let data = image.jpegData(compressionQuality: 0.85) else { return }
+            book.coverData = data
+            PersistenceController.shared.save()
+            selectedCoverImage = nil
+        }
     }
 
     // MARK: - Sections
 
     private var coverSection: some View {
-        Group {
-            if let data = book.coverData, let image = UIImage(data: data) {
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(maxWidth: 160)
-                    .cornerRadius(8)
-                    .shadow(radius: 4)
-                    .frame(maxWidth: .infinity)
-            } else {
-                Rectangle()
-                    .fill(Color(.systemGray5))
-                    .frame(width: 120, height: 170)
-                    .cornerRadius(8)
-                    .frame(maxWidth: .infinity)
+        Button {
+            showCoverOptions = true
+        } label: {
+            Group {
+                if let data = book.coverData, let image = UIImage(data: data) {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxWidth: 160)
+                        .cornerRadius(8)
+                        .shadow(radius: 4)
+                        .overlay(alignment: .bottomTrailing) {
+                            Image(systemName: "pencil.circle.fill")
+                                .font(.title3)
+                                .foregroundStyle(.white, .blue)
+                                .padding(6)
+                        }
+                } else {
+                    ZStack {
+                        Rectangle()
+                            .fill(Color(.systemGray5))
+                            .frame(width: 120, height: 170)
+                            .cornerRadius(8)
+                        VStack(spacing: 6) {
+                            Image(systemName: "camera")
+                                .font(.title2)
+                                .foregroundStyle(.secondary)
+                            Text("Add Cover")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
             }
+            .frame(maxWidth: .infinity)
         }
+        .buttonStyle(.plain)
     }
 
     private var statusSection: some View {
