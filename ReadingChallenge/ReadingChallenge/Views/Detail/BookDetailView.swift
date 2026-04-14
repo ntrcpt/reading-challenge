@@ -5,7 +5,6 @@ struct BookDetailView: View {
     @ObservedObject var book: Book
     @ObservedObject var viewModel: BookListViewModel
     @Environment(\.dismiss) private var dismiss
-    @State private var showDeleteConfirm = false
     @State private var currentPage: Double
     @State private var showEditSheet = false
     @State private var showCoverOptions = false
@@ -55,15 +54,6 @@ struct BookDetailView: View {
                 datesSection
 
                 Divider()
-
-                // Delete
-                Button(role: .destructive) {
-                    showDeleteConfirm = true
-                } label: {
-                    Label("Delete Book", systemImage: "trash")
-                        .frame(maxWidth: .infinity)
-                }
-                .padding(.bottom, 16)
             }
             .padding()
         }
@@ -75,13 +65,10 @@ struct BookDetailView: View {
             }
         }
         .sheet(isPresented: $showEditSheet) {
-            EditBookView(book: book)
-        }
-        .confirmationDialog("Delete this book?", isPresented: $showDeleteConfirm, titleVisibility: .visible) {
-            Button("Delete", role: .destructive) {
+            EditBookView(book: book, onDelete: {
                 viewModel.deleteBook(book)
                 dismiss()
-            }
+            })
         }
         .confirmationDialog("Change Cover Photo", isPresented: $showCoverOptions, titleVisibility: .visible) {
             if UIImagePickerController.isSourceTypeAvailable(.camera) {

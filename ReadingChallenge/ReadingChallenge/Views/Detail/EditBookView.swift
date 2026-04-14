@@ -2,13 +2,16 @@ import SwiftUI
 
 struct EditBookView: View {
     let book: Book
+    let onDelete: (() -> Void)?
     @StateObject private var viewModel: EditBookViewModel
     @Environment(\.dismiss) private var dismiss
+    @State private var showDeleteConfirm = false
 
     private let originalISBN: String
 
-    init(book: Book) {
+    init(book: Book, onDelete: (() -> Void)? = nil) {
         self.book = book
+        self.onDelete = onDelete
         self.originalISBN = book.isbn
         _viewModel = StateObject(wrappedValue: EditBookViewModel(book: book))
     }
@@ -51,6 +54,17 @@ struct EditBookView: View {
                             .font(.footnote)
                     }
                 }
+
+                if onDelete != nil {
+                    Section {
+                        Button(role: .destructive) {
+                            showDeleteConfirm = true
+                        } label: {
+                            Label("Delete Book", systemImage: "trash")
+                                .frame(maxWidth: .infinity)
+                        }
+                    }
+                }
             }
             .navigationTitle("Edit Book")
             .navigationBarTitleDisplayMode(.inline)
@@ -73,6 +87,12 @@ struct EditBookView: View {
             ) {
                 Button("Apply API Results") { viewModel.applyAPIResult() }
                 Button("Keep Mine", role: .cancel) { }
+            }
+            .confirmationDialog("Delete this book?", isPresented: $showDeleteConfirm, titleVisibility: .visible) {
+                Button("Delete", role: .destructive) {
+                    dismiss()
+                    onDelete?()
+                }
             }
         }
     }
