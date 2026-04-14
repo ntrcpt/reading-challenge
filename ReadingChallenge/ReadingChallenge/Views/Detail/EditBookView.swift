@@ -70,12 +70,10 @@ struct EditBookView: View {
 
                 if onDelete != nil {
                     Section {
-                        Button(role: .destructive) {
+                        Button("Delete Book", role: .destructive) {
                             showDeleteConfirm = true
-                        } label: {
-                            Label("Delete Book", systemImage: "trash")
-                                .frame(maxWidth: .infinity)
                         }
+                        .frame(maxWidth: .infinity)
                     }
                 }
             }
