@@ -24,3 +24,24 @@ struct OpenLibraryBookData: Decodable {
         let large: String?
     }
 }
+
+// Decodable types for Google Books API response
+struct GoogleBooksResponse: Decodable {
+    let items: [Volume]?
+
+    struct Volume: Decodable {
+        let volumeInfo: VolumeInfo
+
+        struct VolumeInfo: Decodable {
+            let title: String?
+            let authors: [String]?
+            let pageCount: Int?
+            let imageLinks: ImageLinks?
+
+            struct ImageLinks: Decodable {
+                let thumbnail: String?
+                let smallThumbnail: String?
+            }
+        }
+    }
+}
