@@ -83,14 +83,39 @@ enum BookAPIService {
 
         // Google Books returns HTTP URLs; upgrade to HTTPS for App Transport Security
         let rawCover = info.imageLinks?.thumbnail ?? info.imageLinks?.smallThumbnail
-        let coverURL = rawCover.map { $0.replacingOccurrences(of: "http://", with: "https://") }
+        var coverURL = rawCover.map { $0.replacingOccurrences(of: "http://", with: "https://") }
+
+        // If this edition has no cover, search by title+author to find one from another edition
+        let author = info.authors?.first ?? "Unknown Author"
+        if coverURL == nil {
+            coverURL = await fetchAlternateEditionCover(title: title, author: author)
+        }
 
         return BookDTO(
             title: title,
-            author: info.authors?.first ?? "Unknown Author",
+            author: author,
             pageCount: Int32(info.pageCount ?? 0),
             coverURL: coverURL
         )
+    }
+
+    private static func fetchAlternateEditionCover(title: String, author: String) async -> String? {
+        let query = "intitle:\(title) inauthor:\(author)"
+        guard let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else { return nil }
+        var urlString = "https://www.googleapis.com/books/v1/volumes?q=\(encoded)&maxResults=10"
+        if let key = googleBooksAPIKey { urlString += "&key=\(key)" }
+        guard let url = URL(string: urlString),
+              let (data, response) = try? await URLSession.shared.data(from: url),
+              (response as? HTTPURLResponse)?.statusCode == 200,
+              let result = try? JSONDecoder().decode(GoogleBooksResponse.self, from: data)
+        else { return nil }
+
+        for volume in result.items ?? [] {
+            let info = volume.volumeInfo
+            guard let raw = info.imageLinks?.thumbnail ?? info.imageLinks?.smallThumbnail else { continue }
+            return raw.replacingOccurrences(of: "http://", with: "https://")
+        }
+        return nil
     }
 
     static func fetchCoverData(urlString: String) async -> Data? {

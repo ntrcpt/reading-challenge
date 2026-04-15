@@ -24,7 +24,8 @@ final class ISBNLookupTests: XCTestCase {
 
         XCTAssertEqual(dto.pageCount, 190, "Expected 190 pages, got \(dto.pageCount)")
 
-        // Note: neither Open Library nor Google Books has a cover image for this ISBN.
-        // The test documents the known state rather than asserting presence.
+        // The exact ISBN has no cover in Google Books, but the alternate-edition
+        // cover search should find one from a different printing.
+        XCTAssertNotNil(dto.coverURL, "Expected a cover URL from an alternate edition but got nil")
     }
 }
