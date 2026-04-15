@@ -21,3 +21,6 @@ Podfile.lock
 
 # my notes
 IDEAS.md
+
+# API keys
+ReadingChallenge/ReadingChallenge/Services/APIKeys.swift
