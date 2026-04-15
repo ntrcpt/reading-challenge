@@ -61,8 +61,14 @@ enum BookAPIService {
         )
     }
 
+    // Google Books API key — required to avoid shared-quota rate limits.
+    // Get a free key at https://console.cloud.google.com (enable "Books API", create an API key).
+    // Paste the key below or store it in a gitignored APIKeys.swift file.
+    static var googleBooksAPIKey: String? = nil
+
     private static func fetchBookFromGoogleBooks(isbn: String) async throws -> BookDTO {
-        let urlString = "https://www.googleapis.com/books/v1/volumes?q=isbn:\(isbn)"
+        var urlString = "https://www.googleapis.com/books/v1/volumes?q=isbn:\(isbn)"
+        if let key = googleBooksAPIKey { urlString += "&key=\(key)" }
         guard let url = URL(string: urlString) else { throw APIError.invalidURL }
 
         let (data, response) = try await URLSession.shared.data(from: url)

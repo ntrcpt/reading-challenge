@@ -10,6 +10,10 @@ import CoreData
 
 @main
 struct ReadingChallengeApp: App {
+    init() {
+        BookAPIService.googleBooksAPIKey = APIKeys.googleBooks
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()
